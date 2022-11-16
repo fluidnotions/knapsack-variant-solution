@@ -1,47 +1,43 @@
-# fp-take-home-test
+# Max total USD by prioritizing transactions according to latency sum within given time
 
-## Development
+## Results
 
-The project use [husky](https://github.com/typicode/husky) and
-[lint-staged](https://github.com/okonet/lint-staged) for linting and fixing possible errors on
-source code before commit
+[unit tests](./test/TransactionProcessor.test.ts)
 
-Git hooks scripts are installed after running `npm install` the first time
+```
+[1000] totalAmount: $ 13768.36
+[90] totalAmount: $ 3901.42
+[60] totalAmount: $ 1966.40
+[50] totalAmount: $ 999.17
+```
 
-### npm run build
+## Experimental Implementation With Variant Datasets
 
-Compile typescript files from the `src` folder without emitting the sources
+[experimental implementation tests](./test/ExperimentalTransactionPrioritization.test.ts)
 
-### npm run build:commonjs
+```
+variants:  { totalTime: 1000, exclN: 0 }
+[prioritize2] totalAmount: $ 9725.410000000005
+[prioritize4] totalAmount: $ 13768.359999999999
+variants:  { totalTime: 1000, exclN: 1 }
+[prioritize2] totalAmount: $ 8047.83
+[prioritize4] totalAmount: $ 13597.16
+variants:  { totalTime: 50, exclN: 1 }
+[prioritize2] totalAmount: $ 3188.6000000000004
+[prioritize4] totalAmount: $ 999.17 
+variants:  { totalTime: 90, exclN: 1 }
+[prioritize2] totalAmount: $ 4971.42
+[prioritize4] totalAmount: $ 3759.51
+variants:  { totalTime: 90, exclN: 0 }
+[prioritize2] totalAmount: $ 5581.01
+[prioritize4] totalAmount: $ 3901.4199999999996
+variants:  { totalTime: 1000, exclN: 0 }
+[prioritize2] totalAmount: $ 9725.410000000005
+[prioritize4] totalAmount: $ 13768.359999999999
+```
 
-Compile typescript files from the `src` folder, excluding `*.test.ts` and `*.spec.ts` file, inside
-the `dist/commonjs` folder
+### Insights
 
-### npm run clean
+There is likely a more elegant solution, perhaps an existing algorithm out there that gets to the heart of this. I didn't google this one, because it's the most interesting problem test I've had this month. I got to 2h30m and stopped the differential analysis. Since space/time of prioritize was excluded in the criteria, I just went with a combo solution. Used the last 30m to add some [fluff (the mock)](./test/TransactionProcessor.test.ts#L71) to the main test & wrote this readme  
 
-Remove the following directories/files
 
-- **.tmp**
-- **dist**
-
-### npm test
-
-Run `*.test.ts` and `*.spec.ts` files under the `src` folder
-
-### npm run cover
-
-The same as `npm test` and generates coverages reports in `.tmp/reports/coverage`. Exit with code >
-0 on error
-
-### npm run lint
-
-Check eslint errors according to `.eslintrc` and `.pretterrc` applying fixes and run prettier on
-every typescript file
-
-### npm run release
-
-- Bump `package.json` version accordingly to the commit messages
-- Generate changelog for the new version from the commit messages
-- Commit `package.json` and `CHANGELOG.md` with the new changes
-- Create a git tag with the new version
-- You'll need to execute `git push --follow-tags origin main` after generating a release
