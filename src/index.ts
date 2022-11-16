@@ -22,7 +22,7 @@ export class TransactionProcessor {
     const totalAmount1 = subset1.reduce((acc, transaction) => acc + transaction.Amount, 0);
     const prep2 =  orderBy(transAndLat, ['Amount'], ['desc']).filter(i => i.latency < totalTime);
     const subset2 = this.transInTime(totalTime, prep2)
-    const totalAmount2 = subset1.reduce((acc, transaction) => acc + transaction.Amount, 0);
+    const totalAmount2 = subset2.reduce((acc, transaction) => acc + transaction.Amount, 0);
     return totalAmount1 > totalAmount2 ? subset1 : subset2
   }
 
@@ -72,7 +72,7 @@ export class ExperimentalTransactionPrioritization {
 
   prioritize2(transactions: Array<Transaction>, totalTime = 1000): Array<Transaction> {
     const transAndLat = transactions.map((t) => ({ ...t, latency: this.averageLatencies[t.BankCountryCode] }));
-    const subset = orderBy(transAndLat, ['latency', 'Amount'], ['asc', 'desc']);
+    const subset = orderBy(transAndLat, ['latency', 'Amount'], ['asc', 'desc']).filter(i => i.latency < totalTime);
     writeFileSync(join(__dirname, '..', 'experimental-output', 'prioritize2-out.json'), JSON.stringify(subset, null, 2))
     return this.transInTime(totalTime, subset)
   }

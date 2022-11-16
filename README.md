@@ -6,9 +6,9 @@
 
 ```
 [1000] totalAmount: $ 13768.36
-[90] totalAmount: $ 3901.42
-[60] totalAmount: $ 1966.40
-[50] totalAmount: $ 999.17
+[90] totalAmount: $ 5581.01
+[60] totalAmount: $ 4139.43
+[50] totalAmount: $ 3474.55
 ```
 
 ## Experimental Implementation With Variant Datasets
@@ -31,9 +31,6 @@ variants:  { totalTime: 90, exclN: 1 }
 variants:  { totalTime: 90, exclN: 0 }
 [prioritize2] totalAmount: $ 5581.01
 [prioritize4] totalAmount: $ 3901.4199999999996
-variants:  { totalTime: 1000, exclN: 0 }
-[prioritize2] totalAmount: $ 9725.410000000005
-[prioritize4] totalAmount: $ 13768.359999999999
 ```
 
 ### Insights

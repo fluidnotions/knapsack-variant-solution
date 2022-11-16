@@ -16,7 +16,7 @@ describe('ExperimentalTransactionPrioritization', () => {
   let experimental: ExperimentalTransactionPrioritization;
   let transactionList: Array<Transaction>;
   const latencies = require('./__data/latencies.json');
-  const totalTime = 1000;
+  const totalTime = 90;
   const exclN = 0;
 
   beforeAll(async () => {
@@ -46,7 +46,7 @@ describe('ExperimentalTransactionPrioritization', () => {
     console.log(`lat asc`, asc);
   });
 
-  it('[prioritize] should return the max amount in totalTime ms', () => {
+  xit('[prioritize] should return the max amount in totalTime ms', () => {
     const lowBound = 0;
     const subset = experimental.prioritize(transactionList, totalTime);
     const totalAmount = subset.reduce((acc, transaction) => acc + transaction.Amount, 0);
