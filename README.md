@@ -38,6 +38,6 @@ variants:  { totalTime: 1000, exclN: 0 }
 
 ### Insights
 
-There is likely a more elegant solution, perhaps an existing algorithm out there that gets to the heart of this. I didn't google this one, because it's the most interesting problem test I've had this month. I got to 2h30m and stopped the differential analysis. Since space/time of prioritize was excluded in the criteria, I just went with a combo solution. Used the last 30m to add some [fluff (the mock)](./test/TransactionProcessor.test.ts#L71) to the main test & wrote this readme  
+There is likely a more elegant solution, perhaps an existing algorithm out there that gets to the heart of this. I didn't google this one, because it's the most interesting problem test I've had this month. I got to 2h30m and stopped the differential analysis. Since space/time of prioritize was excluded in the criteria, I just went with a combo solution. Used the last 30m to add some [fluff (the mock)](./test/TransactionProcessor.test.ts) to the main test & wrote this readme  
 
 
