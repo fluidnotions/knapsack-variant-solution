@@ -73,17 +73,4 @@ describe('TransactionProcessor', () => {
     });
   });
 
-  describe('processTransactions', () => {
-    it('shows time without prioritize', async () => {
-      console.time('without prioritize');
-      await transactionProcessor.processTransactions(transactionList);
-      console.timeEnd('without prioritize');
-    });
-
-    it('shows time with prioritize', async () => {
-        console.time('with prioritize');
-        await transactionProcessor.processTransactions(transactionProcessor.prioritize(transactionList, 1000));
-        console.timeEnd('with prioritize');
-      });
-  });
 });

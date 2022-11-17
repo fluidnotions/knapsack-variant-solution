@@ -7,6 +7,16 @@ export type Transaction = {
   BankCountryCode: string;
 };
 
+export type CountryCodeTransactions = {
+  transactions: Array<Transaction>
+  cc: string
+}
+
+export type TransactionSetAndSum = {
+  transactions: Array<Transaction>
+  sum: number
+}
+
 export type ProcessedTransactionResult = {
   id: string;
   fraudulent: boolean;

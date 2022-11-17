@@ -46,15 +46,7 @@ describe('ExperimentalTransactionPrioritization', () => {
     console.log(`lat asc`, asc);
   });
 
-  xit('[prioritize] should return the max amount in totalTime ms', () => {
-    const lowBound = 0;
-    const subset = experimental.prioritize(transactionList, totalTime);
-    const totalAmount = subset.reduce((acc, transaction) => acc + transaction.Amount, 0);
-    console.log(`[prioritize] totalAmount: $`, totalAmount);
-    expect(totalAmount).toBeGreaterThan(lowBound);
-  });
-
-  it('[prioritize2] should return the max amount totalTime ms', () => {
+  it('[prioritize1] should return the max amount totalTime ms', () => {
     const lowBound = 0;
     const subset = experimental.prioritize2(transactionList, totalTime);
     const totalAmount = subset.reduce((acc, transaction) => acc + transaction.Amount, 0);
@@ -62,9 +54,9 @@ describe('ExperimentalTransactionPrioritization', () => {
     expect(totalAmount).toBeGreaterThan(lowBound);
   });
 
-  it('[prioritize4] should return the max amount in totalTime ms', () => {
+  it('[prioritize2] should return the max amount in totalTime ms', () => {
     const lowBound = 0;
-    const subset = experimental.prioritize4(transactionList, totalTime);
+    const subset = experimental.prioritize2(transactionList, totalTime);
     const totalAmount = subset.reduce((acc, transaction) => acc + transaction.Amount, 0);
     console.log(`[prioritize4] totalAmount: $`, totalAmount);
     expect(totalAmount).toBeGreaterThan(lowBound);
