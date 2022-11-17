@@ -17,6 +17,12 @@ export type TransactionSetAndSum = {
   sum: number
 }
 
+export type Bucket = {
+  sum: number,
+  bucket: string[],
+  fill: boolean
+}
+
 export type ProcessedTransactionResult = {
   id: string;
   fraudulent: boolean;

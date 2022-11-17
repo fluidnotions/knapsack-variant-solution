@@ -1,28 +1,28 @@
-import { BankApiClient, ExperimentalTransactionPrioritization, TransactionProcessor } from '../src';
-import { Transaction } from '../src/types';
+import { BankApiClient, TransactionProcessor } from '../src';
+import { Bucket, CountryCodeTransactions, Transaction } from '../src/types';
 import 'jest-extended';
 import { mock } from 'jest-mock-extended';
 import csv from 'csvtojson';
 import { join } from 'path';
-import { take } from 'lodash';
+import { groupBy, orderBy } from 'lodash';
 
 describe('TransactionProcessor', () => {
   let transactionProcessor: TransactionProcessor;
   let transactionList: Array<Transaction>;
+  const averageLatencies = require('./__data/latencies.json');
   
 
-  beforeAll(async () => {
-    const latencies = require('./__data/latencies.json');
+  beforeAll(async () => { 
     const bankApiClient = mock<BankApiClient>({
       processTransaction: async (transaction: Transaction) => {
         return new Promise(resolve => {
           setTimeout(() => {
             resolve(false);
-          }, latencies[transaction.BankCountryCode]);
+          }, averageLatencies[transaction.BankCountryCode]);
         });
       }
     });
-    transactionProcessor = new TransactionProcessor(bankApiClient, latencies);
+    transactionProcessor = new TransactionProcessor(bankApiClient, averageLatencies);
     transactionList = (await csv().fromFile(join(__dirname, '__data/transactions.csv'))).map((transaction: any) => {
       return {
         ID: transaction.id,
@@ -36,7 +36,23 @@ describe('TransactionProcessor', () => {
     jest.resetAllMocks();
   });
 
+  describe('getTransactionSetAndSum', () => {
+    it('should create setAndSum', () => {
+      const result: Array<Bucket> = transactionProcessor.getCountryCodeBuckets(averageLatencies, 1000);
+      const groupedOrdered = transactionProcessor.groupAndOrder(transactionList);
+      console.log(`groupedOrdered`, groupedOrdered);
+      const setAndSum = transactionProcessor.getTransactionSetAndSum(result[0].bucket, groupedOrdered)
+      console.log(`setAndSum`, setAndSum)
+    });
+  })
 
+  describe('getCountryCodeBuckets', () => {
+    it('should return all buckets of the averageLatencies that sum to 50', () => {
+      const buckets = transactionProcessor.getCountryCodeBuckets(averageLatencies, 50);
+      console.log(`buckets`, buckets)
+      expect(buckets.length).toBeGreaterThan(0);
+    });
+  })
 
   describe('prioritize', () => {
     //50ms, 60ms, 90ms, 1000ms

@@ -1,5 +1,5 @@
-import { groupBy, maxBy, orderBy } from 'lodash';
-import { CountryCodeTransactions, ProcessedTransactionResult, Transaction, TransactionSetAndSum } from './types';
+import { fill, groupBy, maxBy, orderBy, take } from 'lodash';
+import { Bucket, CountryCodeTransactions, ProcessedTransactionResult, Transaction, TransactionSetAndSum } from './types';
 
 export class TransactionProcessor {
   constructor(private bankApiClient: BankApiClient, private averageLatencies: Record<string, number>) {}
@@ -14,57 +14,75 @@ export class TransactionProcessor {
   }
 
   prioritize(transactions: Array<Transaction>, totalTime = 1000): Array<Transaction> {
-    const result: Array<Array<string>> = this.getSubsets(this.averageLatencies, totalTime);
-    console.log(`prioritize -> prioritize -> result`, result)
-    const groupedOrdered: Array<CountryCodeTransactions> = Object.entries(groupBy(transactions, 'BankCountryCode')).map(([cc, transactions]) => {
-      return {
-        cc,
-        transactions: orderBy(transactions, 'Amount', 'desc')
-      }
-    });
-    console.log(`prioritize -> groupedOrdered`, groupedOrdered)
-    const setsAndSums: Array<TransactionSetAndSum> = []
-    for(let subset of result) {
-      setsAndSums.push(this.getTransactionSetAndSum(subset, groupedOrdered))
+    const result: Array<Bucket> = this.getCountryCodeBuckets(this.averageLatencies, totalTime);
+    const groupedOrdered = this.groupAndOrder(transactions);
+    const setsAndSums: Array<TransactionSetAndSum> = [];
+    for (let subset of result.map(r => r.bucket)) {
+      setsAndSums.push(this.getTransactionSetAndSum(subset, groupedOrdered));
     }
-    console.log(`prioritize -> setsAndSums`, setsAndSums)
-    return maxBy(setsAndSums, 'sum')?.transactions || []
+    return maxBy(setsAndSums, 'sum')?.transactions || [];
   }
 
-  private getTransactionSetAndSum(subset: Array<string>, groupedOrdered: Array<CountryCodeTransactions>): TransactionSetAndSum{
-    let sum = 0
-    const transactions = []
-    for(let cc of subset) {
-      const target = groupedOrdered.find((group) => group.cc === cc);
+  groupAndOrder(transactions: Array<Transaction>): Array<CountryCodeTransactions>{
+    const groupedOrdered: Array<CountryCodeTransactions> = Object.entries(groupBy(transactions, 'BankCountryCode')).map(
+      ([cc, transactions]) => {
+        return {
+          cc,
+          transactions: orderBy(transactions, ['Amount'], ['asc'])
+        };
+      }
+    );
+    return groupedOrdered
+  }
+
+  getTransactionSetAndSum(subset: Array<string>, groupedOrdered: Array<CountryCodeTransactions>): TransactionSetAndSum {
+    let sum = 0;
+    const transactions = [];
+    for (let cc of subset) {
+      const target = groupedOrdered.find(group => group.cc === cc);
       if (target) {
-        const topTrans = target.transactions.pop()
+        const topTrans = target.transactions.pop();
         if (topTrans) {
           sum += topTrans.Amount;
           transactions.push(topTrans);
         }
       }
     }
-    return {sum, transactions}
+    return { sum, transactions };
   }
 
-  private getSubsets(averageLatencies: Record<string, number>, totalTime: number): Array<Array<string>> {
-      const array: Array<[string, number]> = Object.entries(averageLatencies)
-      const fork = (i = 0, s = 0, t: Array<[string, number]> = []) => {
-          if (s === totalTime) {
-              result.push(t);
-              return;
+  getCountryCodeBuckets(averageLatencies: Record<string, number>, totalTime: number): Array<Bucket> {
+    const usable = Object.entries(averageLatencies).filter(([, num]) => num < totalTime);
+    const buckets: Array<Bucket> = usable.map(([cc, num]) => {
+      return {
+        sum: num,
+        bucket: [cc],
+        fill: false
+      };
+    });
+    while (buckets.some(i => !i.fill)) {
+      for (let [cc, num] of usable) {
+        if (totalTime % num === 0) {
+          const bucket: string[] = fill(Array(totalTime / num), cc);
+          buckets.push({
+            sum: totalTime,
+            bucket,
+            fill: true
+          });
+        }
+        for (let bucket of buckets) {
+          const nextSum = bucket.sum + num;
+          if (nextSum <= totalTime) {
+            bucket.sum += num;
+            bucket.bucket.push(cc);
+          } else {
+            bucket.fill = true;
           }
-          if (i === array.length) {
-              return;
-          }
-          if (s + array[i][1] <= totalTime) {
-              fork(i + 1, s + array[i][1], t.concat(array[i]));
-          }
-          fork(i + 1, s, t);
+        }
       }
-      const result: Array<Array<[string, number]>>  = [];
-      fork();
-      return result.map((s) => s.map(([cc]) => cc));
+    }
+    return buckets
+    
   }
 }
 
@@ -77,28 +95,27 @@ export class BankApiClient {
 export class ExperimentalTransactionPrioritization {
   constructor(private averageLatencies: Record<string, number>) {}
 
-  private transInTime(totalTime: number, subset: Array<Transaction & {latency: number}>){
+  private transInTime(totalTime: number, subset: Array<Transaction & { latency: number }>) {
     const transInTime = [];
     let timeLeft = totalTime;
     for (let transaction of subset) {
       if (timeLeft - transaction.latency > 0) {
         transInTime.push(transaction);
-        timeLeft -=  transaction.latency;
+        timeLeft -= transaction.latency;
       }
     }
-    return transInTime
+    return transInTime;
   }
 
   prioritize1(transactions: Array<Transaction>, totalTime = 1000): Array<Transaction> {
-    const transAndLat = transactions.map((t) => ({ ...t, latency: this.averageLatencies[t.BankCountryCode] }));
+    const transAndLat = transactions.map(t => ({ ...t, latency: this.averageLatencies[t.BankCountryCode] }));
     const subset = orderBy(transAndLat, ['latency', 'Amount'], ['asc', 'desc']).filter(i => i.latency < totalTime);
-    return this.transInTime(totalTime, subset)
+    return this.transInTime(totalTime, subset);
   }
 
   prioritize2(transactions: Array<Transaction>, totalTime = 1000) {
-    const transAndLat = transactions.map((t) => ({ ...t, latency: this.averageLatencies[t.BankCountryCode] }));
+    const transAndLat = transactions.map(t => ({ ...t, latency: this.averageLatencies[t.BankCountryCode] }));
     const subset = orderBy(transAndLat, ['Amount'], ['desc']).filter(i => i.latency < totalTime);
-    return this.transInTime(totalTime, subset)
+    return this.transInTime(totalTime, subset);
   }
-
 }
