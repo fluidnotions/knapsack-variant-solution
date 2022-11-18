@@ -5,6 +5,7 @@ import { mock } from 'jest-mock-extended';
 import csv from 'csvtojson';
 import { join } from 'path';
 import { groupBy, orderBy } from 'lodash';
+import { writeFileSync } from 'fs';
 
 describe('TransactionProcessor', () => {
   let transactionProcessor: TransactionProcessor;
@@ -47,9 +48,9 @@ describe('TransactionProcessor', () => {
   })
 
   describe('getCountryCodeBuckets', () => {
-    it('should return all buckets of the averageLatencies that sum to 50', () => {
-      const buckets = transactionProcessor.getCountryCodeBuckets(averageLatencies, 50);
-      console.log(`buckets`, buckets)
+    it('should return all buckets of the averageLatencies that sum to 1000', () => {
+      const buckets = transactionProcessor.getCountryCodeBuckets(averageLatencies, 1000);
+      writeFileSync(join(__dirname, '__data/buckets.json'), JSON.stringify(buckets, null, 2));
       expect(buckets.length).toBeGreaterThan(0);
     });
   })
@@ -58,7 +59,7 @@ describe('TransactionProcessor', () => {
     //50ms, 60ms, 90ms, 1000ms
     it('should return the max amount in 1000ms', async () => {
       const lowBound = 0;
-      const subset = transactionProcessor.prioritize(transactionList, 1000);
+      const subset = transactionProcessor.prioritize(transactionList, 10000);
       const totalAmount = subset.reduce((acc, transaction) => acc + transaction.Amount, 0);
       console.log(`[1000] totalAmount: $`, totalAmount);
       expect(totalAmount).toBeGreaterThan(lowBound);

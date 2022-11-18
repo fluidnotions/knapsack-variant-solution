@@ -20,6 +20,8 @@ export class TransactionProcessor {
     for (let subset of result.map(r => r.bucket)) {
       setsAndSums.push(this.getTransactionSetAndSum(subset, groupedOrdered));
     }
+    const sums = setsAndSums.map(s => s.sum);
+    console.log(`prioritize -> sums`, sums)
     return maxBy(setsAndSums, 'sum')?.transactions || [];
   }
 
@@ -62,12 +64,21 @@ export class TransactionProcessor {
     });
     while (buckets.some(i => !i.fill)) {
       for (let [cc, num] of usable) {
-        if (totalTime % num === 0) {
-          const bucket: string[] = fill(Array(totalTime / num), cc);
+        const quotient = Math.floor(totalTime / num);  
+        const remainder = totalTime % num;
+        if (remainder === 0) {
+          const bucket: string[] = fill(Array(quotient), cc);
           buckets.push({
             sum: totalTime,
             bucket,
             fill: true
+          });
+        }else{
+          const bucket: string[] = fill(Array(quotient), cc);
+          buckets.push({
+            sum: totalTime,
+            bucket,
+            fill: false
           });
         }
         for (let bucket of buckets) {
