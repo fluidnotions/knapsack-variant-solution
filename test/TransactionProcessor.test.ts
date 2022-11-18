@@ -1,10 +1,10 @@
 import { BankApiClient, TransactionProcessor } from '../src';
-import { Bucket, CountryCodeTransactions, Transaction } from '../src/types';
+import { Bucket, Transaction } from '../src/types';
 import 'jest-extended';
 import { mock } from 'jest-mock-extended';
 import csv from 'csvtojson';
 import { join } from 'path';
-import { groupBy, orderBy } from 'lodash';
+
 import { writeFileSync } from 'fs';
 
 describe('TransactionProcessor', () => {

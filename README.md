@@ -4,33 +4,33 @@
 
 [unit tests](./test/TransactionProcessor.test.ts)
 
-### Approach 1 Results 
+### Approach Results 
 
 ```
-[1000] totalAmount: $ 13768.36
-[90] totalAmount: $ 5581.01
-[60] totalAmount: $ 4139.43
-[50] totalAmount: $ 3474.55
-```
-
-### Approach 2 Results 
-
-```
-[1000] totalAmount: $ 13090.12
-[90] totalAmount: $ 3635.76
-[60] totalAmount: $ 2771.49
-[50] totalAmount: $ 3517.85
+[1000] totalAmount: $ 98928.51
+[90] totalAmount: $ 5763.62
+[60] totalAmount: $ 4654.24
+[50] totalAmount: $ 4139.43
 ```
 
 
 ## References
 
 * [Subset sum problem](https://en.wikipedia.org/wiki/Subset_sum_problem)
-* [Return all subsets whose sum is a given value (subset sum problem)](https://stackoverflow.com/a/53659385)
 * [four number sum](https://www.algoexpert.io/questions/four-number-sum)
 
-## Insights
+## Algorithm Design
 
-There are differences between this use case and the subset sum problem. In that we want all possible combinations, so check which is the highest. While I was looking at that approach I came up with this one. Given the question uses the word 'bucket' it got me thinking along those lines.
+* create all possible combinations of country code groupings, referred to as buckets in the code, that have a total latency sum less then or equal to the allowed time frame.
+* group the transactions by country code and order transaction amounts asc (This held in the variable named groupedOrdered), so that the hightest can be popped off the array, thereby 
+insuring there is no transaction duplication within a bucket that contains multiple items of the same country code. 
+* a clone of groupedOrdered is passed into a function that assembles the transaction set and finds the total of all the transaction amounts in the bucket. The clones insure the pop array function doesn't effect the next bucket.
+* once all buckets have a transaction set and total amount sum, the transaction set with the highest amount can be selected and returned
+
+## Why is this the best algorithm design?
+
+Because it can easily be extended to ensure all the transactions are sent in a prioritized order. By tracking the ids sent and excluding them in the transactions argument to the prioritize method. You could call prioritize multiple times and ensure the complete transactions list was sent in the optimal order, even with a variable totalTime across prioritize invocations
+
+
 
 

@@ -17,11 +17,10 @@ export class TransactionProcessor {
     const result: Array<Bucket> = this.getCountryCodeBuckets(this.averageLatencies, totalTime);
     const groupedOrdered = this.groupAndOrder(transactions);
     const setsAndSums: Array<TransactionSetAndSum> = [];
-    for (let subset of result.map(r => r.bucket)) {
-      setsAndSums.push(this.getTransactionSetAndSum(subset, groupedOrdered));
+    for (let bucket of result.map(r => r.bucket)) {
+      setsAndSums.push(this.getTransactionSetAndSum(bucket, JSON.parse(JSON.stringify(groupedOrdered))));
     }
-    const sums = setsAndSums.map(s => s.sum);
-    console.log(`prioritize -> sums`, sums)
+    // const sums = setsAndSums.map(s => s.sum);
     return maxBy(setsAndSums, 'sum')?.transactions || [];
   }
 
@@ -37,10 +36,10 @@ export class TransactionProcessor {
     return groupedOrdered
   }
 
-  getTransactionSetAndSum(subset: Array<string>, groupedOrdered: Array<CountryCodeTransactions>): TransactionSetAndSum {
+  getTransactionSetAndSum(bucket: Array<string>, groupedOrdered: Array<CountryCodeTransactions>): TransactionSetAndSum {
     let sum = 0;
     const transactions = [];
-    for (let cc of subset) {
+    for (let cc of bucket) {
       const target = groupedOrdered.find(group => group.cc === cc);
       if (target) {
         const topTrans = target.transactions.pop();
