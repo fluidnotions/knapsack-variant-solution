@@ -24,7 +24,7 @@ export class TransactionProcessor {
     return maxBy(setsAndSums, 'sum')?.transactions || [];
   }
 
-  groupAndOrder(transactions: Array<Transaction>): Array<CountryCodeTransactions>{
+  groupAndOrder(transactions: Array<Transaction>): Array<CountryCodeTransactions> {
     const groupedOrdered: Array<CountryCodeTransactions> = Object.entries(groupBy(transactions, 'BankCountryCode')).map(
       ([cc, transactions]) => {
         return {
@@ -33,7 +33,7 @@ export class TransactionProcessor {
         };
       }
     );
-    return groupedOrdered
+    return groupedOrdered;
   }
 
   getTransactionSetAndSum(bucket: Array<string>, groupedOrdered: Array<CountryCodeTransactions>): TransactionSetAndSum {
@@ -54,30 +54,15 @@ export class TransactionProcessor {
 
   getCountryCodeBuckets(averageLatencies: Record<string, number>, totalTime: number): Array<Bucket> {
     const usable = Object.entries(averageLatencies).filter(([, num]) => num < totalTime);
-    const buckets: Array<Bucket> = usable.map(([cc, num]) => {
-      return {
-        sum: num,
-        bucket: [cc],
-        fill: false
-      };
-    });
+    const buckets: Array<Bucket> = this.initBuckets(totalTime, usable)
     while (buckets.some(i => !i.fill)) {
       for (let [cc, num] of usable) {
-        const quotient = Math.floor(totalTime / num);  
-        const remainder = totalTime % num;
-        if (remainder === 0) {
-          const bucket: string[] = fill(Array(quotient), cc);
+        if (totalTime % num === 0) {
+          const bucket: string[] = fill(Array(Math.floor(totalTime / num)), cc);
           buckets.push({
             sum: totalTime,
             bucket,
             fill: true
-          });
-        }else{
-          const bucket: string[] = fill(Array(quotient), cc);
-          buckets.push({
-            sum: totalTime,
-            bucket,
-            fill: false
           });
         }
         for (let bucket of buckets) {
@@ -91,8 +76,28 @@ export class TransactionProcessor {
         }
       }
     }
-    return buckets
-    
+    return buckets;
+  }
+
+  private initBuckets(totalTime: number, usable: Array<[string, number]>) {
+    const buckets: Array<Bucket> = [];
+    usable.forEach(([cc, num]) => {
+      buckets.push({
+        sum: num,
+        bucket: [cc],
+        fill: false
+      });
+      if (totalTime % num > 0) {
+        const quotient = Math.floor(totalTime / num);
+        const bucket: string[] = fill(Array(quotient), cc);
+        buckets.push({
+          sum: totalTime,
+          bucket,
+          fill: false
+        });
+      }
+    });
+    return buckets;
   }
 }
 
