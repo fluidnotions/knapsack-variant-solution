@@ -1,5 +1,7 @@
 # Max total USD by prioritizing transactions according to latency sum within given time
 
+[problem instructions](https://gist.github.com/Valve/834d7122ca75dc58d28c3e4be5a15506)
+
 ## Results
 
 [unit tests](./test/TransactionProcessor.test.ts)
@@ -27,9 +29,19 @@ insuring there is no transaction duplication within a bucket that contains multi
 * a clone of groupedOrdered is passed into a function that assembles the transaction set and finds the total of all the transaction amounts in the bucket. The clones insure the pop array function doesn't effect the next bucket.
 * once all buckets have a transaction set and total amount sum, the transaction set with the highest amount can be selected and returned
 
-## Why is this the best algorithm design?
+## Algorithm Choice
 
-Because it can easily be extended to ensure all the transactions are sent in a prioritized order. By tracking the ids sent and excluding them in the transactions argument to the prioritize method. You could call prioritize multiple times and ensure the complete transactions list was sent in the optimal order, even with a variable totalTime across prioritize invocations
+* the approach ensures all possible combinations are considered
+* including buckets filled by duplicate country codes.
+* including buckets filled by quotient whole number duplicate country codes & whatever others fill the remaining space in the bucket
+
+## Algorithm Limitations
+
+* In the case of buckets filled by quotient whole number duplicate country codes & whatever others fill the remaining space in the bucket, there may be some others combinations which are absent
+
+## Optimization
+
+* The code was not optimized for space/time given time constraints
 
 
 
