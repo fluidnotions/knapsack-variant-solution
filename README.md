@@ -1,5 +1,7 @@
 # Max total USD by prioritizing transactions according to latency sum within given time
 
+[problem instructions](https://gist.github.com/Valve/834d7122ca75dc58d28c3e4be5a15506)
+
 ## Results
 
 [unit tests](./test/TransactionProcessor.test.ts)
