@@ -15,12 +15,6 @@
 [50] totalAmount: $ 4139.43
 ```
 
-
-## References
-
-* [Subset sum problem](https://en.wikipedia.org/wiki/Subset_sum_problem)
-* [four number sum](https://www.algoexpert.io/questions/four-number-sum)
-
 ## Algorithm Design
 
 * initBuckets method sets up a starting point for all possible combinations of country code groupings
