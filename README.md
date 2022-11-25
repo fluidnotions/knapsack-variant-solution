@@ -1,6 +1,6 @@
 # Max total USD by prioritizing transactions according to latency sum within given time
 
-[problem instructions](https://gist.github.com/Valve/834d7122ca75dc58d28c3e4be5a15506)
+[problem instructions](https://gist.github.com/fluidnotions/01c2e869a4e364519dec1eb62411709b)
 
 ## Results
 
